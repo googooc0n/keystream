@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>스트림 암호화</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>암호화</h1>
+    <form method="POST" action="{{ url_for('encrypt') }}">
+      <div class="field">
+        <input id="seed" name="seed" placeholder="시드 입력" required>
+        <button id="generate-seed" type="button">시드 생성</button>
+        <button id="copy-seed"    type="button">복사</button>
+      </div>
+      <div class="field">
+        <label>해시 체인 인덱스</label>
+        <input id="chain_index" name="chain_index" type="number" min="0"
+               value="{{ next_idx if next_idx else 0 }}" required>
+      </div>
+      <div class="field">
+        <label>평문</label>
+        <textarea name="plaintext" rows="4" required></textarea>
+      </div>
+      <button type="submit" class="action">암호화</button>
+    </form>
+
+    {% if result_bin %}
+    <div class="card">
+      <p>사용된 해시 체인 인덱스: <strong>{{ used_idx }}</strong></p>
+      <h2>결과 (이진)</h2>
+      <textarea id="cipher-binary" readonly>{{ result_bin }}</textarea>
+      <button onclick="copyOutput('cipher-binary','이진 복사 완료!')">복사</button>
+
+      <h2>결과 (16진수)</h2>
+      <textarea id="cipher-hex" readonly>{{ result_hex }}</textarea>
+      <button onclick="copyOutput('cipher-hex','16진수 복사 완료!')">복사</button>
+    </div>
+    {% endif %}
+
+    {% if keystream %}
+    <div class="card">
+      <h2>사용된 키스트림 ({{ keystream|length }}비트)</h2>
+      <textarea id="keystream" readonly>{{ keystream }}</textarea>
+      <button onclick="copyKeystream()">복사</button>
+    </div>
+    {% endif %}
+
+    <form action="{{ url_for('decrypt') }}">
+      <button type="submit" class="switch">복호화로 이동</button>
+    </form>
+  </div>
+  <script>
+    // 로컬스토리지에서 seed/index 로드
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const seedIn = document.getElementById('seed');
+      const idxIn  = document.getElementById('chain_index');
+      if(localStorage.seed) { seedIn.value = localStorage.seed; }
+      if(localStorage.chain_index && !idxIn.value) {
+        idxIn.value = localStorage.chain_index;
+      }
+    });
+  </script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
